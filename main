@@ -47,11 +47,11 @@
 	// finally, run our query
 	$SQLQuery = "UPDATE shift SET {$ShiftDateSQL} {$StartTimeSQL} {$EndTimeSQL} {$EstUnpaidBreakSQL} 
 		Hours = CASE
-					WHEN {$EndTimeVar} > {$StartTimeVar} 
-						THEN (HOUR({$EndTimeVar}) + ROUND(MINUTE({$EndTimeVar})/60)) - (HOUR({$StartTimeVar}) + ROUND(MINUTE({$StartTimeVar})/60)) - {$EstUnpaidBreakVar}
-					WHEN {$StartTimeVar} > {$EndTimeVar} 
-						THEN (HOUR({$EndTimeVar}) + ROUND(MINUTE({$EndTimeVar})/60) + 24) - (HOUR({$StartTimeVar}) + ROUND(MINUTE({$StartTimeVar})/60)) - {$EstUnpaidBreakVar}
-					END
+				WHEN {$EndTimeVar} > {$StartTimeVar} 
+					THEN (HOUR({$EndTimeVar}) + ROUND(MINUTE({$EndTimeVar})/60)) - (HOUR({$StartTimeVar}) + ROUND(MINUTE({$StartTimeVar})/60)) - {$EstUnpaidBreakVar}
+				WHEN {$StartTimeVar} > {$EndTimeVar} 
+					THEN (HOUR({$EndTimeVar}) + ROUND(MINUTE({$EndTimeVar})/60) + 24) - (HOUR({$StartTimeVar}) + ROUND(MINUTE({$StartTimeVar})/60)) - {$EstUnpaidBreakVar}
+				END
 		WHERE ShiftPK IN ({$_POST['BulkIDList']})";
     
   	// separate file to process query
