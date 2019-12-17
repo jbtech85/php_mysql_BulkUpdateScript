@@ -1,0 +1,69 @@
+<?php
+
+	/*******************************************************************************************************************
+	|  Because we might have a passed in value, or need to rely on an existing data column value,
+	|  we are putting all of the logic into our SQL query, and replacing what variables to use as needed.
+	|
+	|  This will essentially either do "WHEN EndTime > '17:00:00'" or do "WHEN EndTime > StartTime",
+	|  based on what gets passed in.
+	*******************************************************************************************************************/
+
+	// because these are all the same, just going to comment the first one.
+	// the rest are identical.
+
+	// default to having no updating sql
+	$ShiftDateSQL = '';
+	// default to using DB col for comparison
+	$ShiftDateVar = "ShiftDate";
+	// if the box was clicked to include this column in the update
+	if($_POST['exclude_ShiftDate'] == 1){
+		// set the sql snippet to update this column
+		$ShiftDateSQL = "ShiftDate = '{$_POST['ShiftDate']}',";
+		// and set the calculation variable to use the passed in value
+		$ShiftDateVar = "'{$_POST['ShiftDate']}'";
+	}
+
+	$StartTimeSQL = '';
+	$StartTimeVar = "StartTime";
+	if($_POST['exclude_StartTime'] == 1){
+		$StartTimeSQL = "StartTime = '{$_POST['StartTime']}',";
+		$StartTimeVar = "'{$_POST['StartTime']}'";
+	}
+
+	$EndTimeSQL = '';
+	$EndTimeVar = "EndTime";
+	if($_POST['exclude_EndTime'] == 1){
+		$EndTimeSQL = "EndTime = '{$_POST['EndTime']}',";
+		$EndTimeVar = "'{$_POST['EndTime']}'";
+	}
+
+	$EstUnpaidBreakSQL = '';
+	$EstUnpaidBreakVar = "EstUnpaidBreak";
+	if($_POST['exclude_EstUnpaidBreak'] == 1){
+		$EstUnpaidBreakSQL = "EstUnpaidBreak = '{$_POST['EstUnpaidBreak']}',";
+		$EstUnpaidBreakVar = "'{$_POST['EstUnpaidBreak']}'";
+	}
+
+	// finally, run our query
+	$SQLQuery = "UPDATE shift SET {$ShiftDateSQL} {$StartTimeSQL} {$EndTimeSQL} {$EstUnpaidBreakSQL} 
+		Hours = CASE
+					WHEN {$EndTimeVar} > {$StartTimeVar} 
+						THEN (HOUR({$EndTimeVar}) + ROUND(MINUTE({$EndTimeVar})/60)) - (HOUR({$StartTimeVar}) + ROUND(MINUTE({$StartTimeVar})/60)) - {$EstUnpaidBreakVar}
+					WHEN {$StartTimeVar} > {$EndTimeVar} 
+						THEN (HOUR({$EndTimeVar}) + ROUND(MINUTE({$EndTimeVar})/60) + 24) - (HOUR({$StartTimeVar}) + ROUND(MINUTE({$StartTimeVar})/60)) - {$EstUnpaidBreakVar}
+					END
+		WHERE ShiftPK IN ({$_POST['BulkIDList']})";
+    
+  // separate file to process query
+	include $applicationRoot . 'SQLQuery.php';
+
+	/*******************************************************************************************************************
+	|  Next, to determine the total Rate and Wage, we're going to run a second query that uses the now possibly updated
+	|  Hours col.  Instead of using that CASE statement multimple times in some giant convoluted calcutation query.
+	*******************************************************************************************************************/
+
+	$SQLQuery = "UPDATE shift SET ShiftTotal = (HourlyRate * Hours), WageTotal = (HourlyWage * Hours)
+		WHERE ShiftPK IN ({$_POST['BulkIDList']})";
+    
+  // separate file to process query
+	include $applicationRoot . 'SQLQuery.php';
