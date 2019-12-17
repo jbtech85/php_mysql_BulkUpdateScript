@@ -54,7 +54,7 @@
 					END
 		WHERE ShiftPK IN ({$_POST['BulkIDList']})";
     
-  // separate file to process query
+  	// separate file to process query
 	include $applicationRoot . 'SQLQuery.php';
 
 	/*******************************************************************************************************************
@@ -65,5 +65,5 @@
 	$SQLQuery = "UPDATE shift SET ShiftTotal = (HourlyRate * Hours), WageTotal = (HourlyWage * Hours)
 		WHERE ShiftPK IN ({$_POST['BulkIDList']})";
     
-  // separate file to process query
+  	// separate file to process query
 	include $applicationRoot . 'SQLQuery.php';
